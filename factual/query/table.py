@@ -2,8 +2,8 @@
 Factual table api query
 """
 
-from base import Base
-from read import Read
+from .base import Base
+from .read import Read
 
 DEFAULT_LIMIT = 20
 

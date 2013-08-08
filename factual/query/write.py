@@ -1,4 +1,4 @@
-from base import Base
+from .base import Base
 
 class Write(Base):
     def __init__(self, api, table, factual_id, params):

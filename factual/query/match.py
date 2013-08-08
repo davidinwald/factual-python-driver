@@ -1,4 +1,4 @@
-from read import Read
+from .read import Read
 
 class Match(Read):
     def __init__(self, api, table, values={}):

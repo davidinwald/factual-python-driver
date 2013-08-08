@@ -2,7 +2,7 @@
 Factual Diffs API query
 """
 
-from base import Base
+from .base import Base
 
 import json
 

@@ -2,7 +2,7 @@
 Reverse geocode query
 """
 
-from read import Read
+from .read import Read
 
 class Geocode(Read):
     def __init__(self, api, path, point):

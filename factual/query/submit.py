@@ -1,4 +1,4 @@
-from write import Write
+from .write import Write
 
 class Submit(Write):
     def __init__(self, api, table, factual_id, params={}):
