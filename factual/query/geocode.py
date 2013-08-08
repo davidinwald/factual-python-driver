@@ -8,7 +8,7 @@ class Geocode(Read):
     def __init__(self, api, path, point):
         Read.__init__(self, api, path, point)
 
-    def point(point):
+    def point(self, point):
         return self._copy({'geo': point})
 
     def _copy(self, params):

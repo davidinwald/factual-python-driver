@@ -7,7 +7,7 @@ class Submit(Write):
     def values(self, values):
         return self._copy({'values': values})
 
-    def clear_blanks():
+    def clear_blanks(self):
         return self._copy({'clear_blanks': True})
 
     def _path(self):
