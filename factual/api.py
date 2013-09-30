@@ -60,9 +60,6 @@ class Factual(object):
     def geocode(self, point):
         return Geocode(self.api, 'places/geocode', {'geo': point})
 
-    def monetize(self):
-        return Table(self.api, 'places/monetize')
-
     def diffs(self, table, start, end):
         return Diffs(self.api, 't/' + table + '/diffs', start, end)
 

@@ -1,3 +1,7 @@
+## unreleased
+
+ * removed support for Monetize
+
 ## 1.4.2
 
  * updated geopulse endpoint (#10)

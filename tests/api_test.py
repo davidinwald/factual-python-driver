@@ -173,12 +173,6 @@ class FactualAPITestSuite(unittest.TestCase):
         self.assertEqual('1801 Avenue Of The Stars', result['address'])
         self.assertLess(result['$distance'], 20)
 
-    def test_monetize(self):
-        monetize = self.factual.monetize().filters({'place_locality':'Los Angeles'})
-        result = monetize.data()
-        self.assertGreaterEqual(len(result), 1)
-        self.assertTrue(all(row['place_locality'] == 'Los Angeles' for row in result))
-
     def test_submit_without_id(self):
         values = {'longitude': 100}
         submit = self.factual.submit('us-sandbox', values=values).user('python_driver_tester')
