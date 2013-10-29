@@ -70,6 +70,11 @@ class FactualAPITestSuite(unittest.TestCase):
         self.assertTrue(row['resolved'])
         self.assertEqual('1801 Avenue Of The Stars', row['address'])
 
+    def test_resolve_debug(self):
+        q = self.factual.resolve('places-v3', {'name': 'factual inc', 'locality': 'los angeles'}, debug=True)
+        row = q.data()[0]
+        self.assertIn('similarity', row)
+
     def test_crosswalk(self):
         q = self.factual.crosswalk()
         result = q.filters({'factual_id':'03c26917-5d66-4de9-96bc-b13066173c65','namespace':'simplegeo'}).data()

@@ -27,8 +27,11 @@ class Factual(object):
     def crosswalk(self):
         return Table(self.api, 't/crosswalk')
 
-    def resolve(self, table, values):
-        return Resolve(self.api, table, {'values': values})
+    def resolve(self, table, values, debug=False):
+        params = {'values': values}
+        if debug:
+            params['debug'] = 'true'
+        return Resolve(self.api, table, params)
 
     def match(self, table, values):
         return Match(self.api, table, {'values': values})
