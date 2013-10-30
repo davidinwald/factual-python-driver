@@ -1,6 +1,7 @@
 ## unreleased
 
  * removed support for Monetize
+ * upgraded to requests 2.0
 
 ## 1.4.2
 
