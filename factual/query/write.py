@@ -4,7 +4,7 @@ class Write(Base):
     def __init__(self, api, table, factual_id, params):
         self.table = table
         self.factual_id = factual_id
-        Base.__init__(self, api, self._path(), params)
+        Base.__init__(self, api, self._path(), params, 'POST')
 
     def write(self):
         return self.api.post(self)

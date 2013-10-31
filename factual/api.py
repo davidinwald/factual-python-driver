@@ -4,7 +4,6 @@ Factual API driver
 
 import json
 from functools import partial
-from urllib import urlencode
 
 import requests
 from requests_oauthlib import OAuth1
@@ -110,13 +109,16 @@ class API(object):
         url = self._build_base_url(path)
         return self._make_request(url, raw_params, self._make_post_request).text
 
-    def build_url(self, path, params):
-        url = self._build_base_url(path)
-        url += '?' + self._make_query_string(params)
-        return url
+    def build_url(self, path, params, method):
+        return self._prepare_req(path, params, method).url
 
     def build_multi_url(self, query):
-        return '/' + query.path + '?' + self._make_query_string(query.params)
+        return self._prepare_req(query.path, query.params, query.method).path_url
+
+    def _prepare_req(self, path, params, method):
+        url = self._build_base_url(path)
+        req = requests.Request(method, url, params=self._transform_params(params))
+        return req.prepare()
 
     def _build_base_url(self, path):
         return API_V3_HOST + '/' + path
@@ -143,9 +145,6 @@ class API(object):
     def _make_post_request(self, url, params):
         headers = {'X-Factual-Lib': DRIVER_VERSION_TAG, 'content-type': 'application/x-www-form-urlencoded'}
         return self.client.post(url, headers=headers, data=params)
-
-    def _make_query_string(self, params):
-        return urlencode([(k,v) for k,v in self._transform_params(params).items()])
 
     def _transform_params(self, params):
         if isinstance(params, str):
