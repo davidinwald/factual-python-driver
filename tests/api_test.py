@@ -5,7 +5,7 @@ import unittest
 
 from factual import Factual
 from factual.utils import circle, point
-from test_settings import KEY, SECRET
+from .test_settings import KEY, SECRET
 
 class FactualAPITestSuite(unittest.TestCase):
     def setUp(self):

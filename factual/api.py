@@ -101,7 +101,8 @@ class API(object):
 
     def raw_stream_read(self, path, raw_params):
         url = self._build_base_url(path)
-        for line in self._make_request(url, raw_params, partial(self._make_get_request, stream=True)).iter_lines():
+        response = self._make_request(url, raw_params, partial(self._make_get_request, stream=True))
+        for line in response.iter_lines(decode_unicode=True):
             if line:
                 yield line
 
