@@ -234,5 +234,10 @@ class FactualAPITestSuite(unittest.TestCase):
         row = self.factual.get_row('places', '03c26917-5d66-4de9-96bc-b13066173c65')
         self.assertEqual('Factual', row['name'])
 
+    def test_boost(self):
+        boost = self.factual.boost('us-sandbox', '1007462b-dd79-44f5-a69f-e0b6041fa8bd').user('python_driver_tester')
+        response = boost.write()
+        self.assertEqual('ok', response['status'])
+
 if __name__ == '__main__':
     unittest.main()

@@ -8,7 +8,7 @@ from functools import partial
 import requests
 from requests_oauthlib import OAuth1
 
-from .query import Resolve, Table, Submit, Insert, Facets, Flag, Geopulse, Geocode, Diffs, Match, Multi, Clear
+from .query import Resolve, Table, Submit, Insert, Facets, Flag, Geopulse, Geocode, Diffs, Match, Multi, Clear, Boost
 
 API_V3_HOST = "http://api.v3.factual.com"
 DRIVER_VERSION_TAG = "factual-python-driver-1.4.2"
@@ -55,6 +55,9 @@ class Factual(object):
 
     def flag(self, table, factual_id):
         return Flag(self.api, table, factual_id)
+
+    def boost(self, table, factual_id, q=None):
+        return Boost(self.api, table, factual_id, {'factual_id': factual_id, 'q': q})
 
     def geopulse(self, point={}):
         return Geopulse(self.api, 'geopulse/context', {'geo': point})
