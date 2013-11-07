@@ -9,7 +9,7 @@ import json
 class Diffs(Base):
     def __init__(self, api, path, start, end):
         self.cached_response = None
-        Base.__init__(self, api, path, {'start':int(start), 'end':int(end)})
+        Base.__init__(self, api, path, {'start':int(start), 'end':int(end)}, 'GET')
 
     def data(self):
         if not self.cached_response:

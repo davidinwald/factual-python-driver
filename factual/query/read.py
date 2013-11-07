@@ -3,7 +3,7 @@ from .base import Base
 class Read(Base):
     def __init__(self, api, path, params):
         self.response = None
-        Base.__init__(self, api, path, params)
+        Base.__init__(self, api, path, params, 'GET')
 
     def data(self):
         return self.get_response()['data']

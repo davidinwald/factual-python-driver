@@ -5,7 +5,7 @@ import unittest
 
 from factual import Factual
 from factual.utils import circle, point
-from test_settings import KEY, SECRET
+from .test_settings import KEY, SECRET
 
 class FactualAPITestSuite(unittest.TestCase):
     def setUp(self):
@@ -217,7 +217,7 @@ class FactualAPITestSuite(unittest.TestCase):
         diff_request = self.factual.diffs('places-us', 1372694400000, 1372695300000)
         batch = diff_request.data()
         streamed = list(diff_request.stream())
-        self.assertItemsEqual(batch, streamed)
+        self.assertSequenceEqual(batch, streamed)
 
     def test_match(self):
         match = self.factual.match('places-us', {'name':'McDonalds','address':'10451 Santa Monica Blvd','locality':'Los Angeles','region':'CA'})
