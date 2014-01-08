@@ -1,7 +1,7 @@
 ## unreleased
 
  * removed support for Monetize
- * upgraded to requests 2.0
+ * upgraded to requests 2.1
  * added support for Python 3.3
  * added support for Boost
 

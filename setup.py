@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-required = ['requests == 2.0.1', 'requests_oauthlib == 0.4.0']
+required = ['requests == 2.1.0', 'requests_oauthlib == 0.4.0']
 
 setup(
     author='Factual Driver Team',
