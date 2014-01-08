@@ -7,6 +7,9 @@ from factual import Factual
 from factual.utils import circle, point
 from .test_settings import KEY, SECRET
 
+SANDBOX_UUID = '2aba7958-795c-4100-a221-b47df58a14ba'
+FACTUAL_UUID = '03c26917-5d66-4de9-96bc-b13066173c65'
+
 class FactualAPITestSuite(unittest.TestCase):
     def setUp(self):
         self.factual = Factual(KEY, SECRET)
@@ -57,7 +60,7 @@ class FactualAPITestSuite(unittest.TestCase):
         q = self.places.search('factual').geo(circle(34.06021, -118.41828, 1000))
         row = q.data()[0]
         self.assertEqual('Factual', row['name'])
-        self.assertEqual('1801 Avenue Of The Stars', row['address'])
+        self.assertEqual('1999 Avenue Of The Stars', row['address'])
 
     def test_read_user(self):
         q = self.places.search('sushi').user('python_driver_tester')
@@ -68,7 +71,7 @@ class FactualAPITestSuite(unittest.TestCase):
         q = self.factual.resolve('places-us', {"name": "factual inc", "locality": "los angeles","postcode":"90067"})
         row = q.data()[0]
         self.assertTrue(row['resolved'])
-        self.assertEqual('1801 Avenue Of The Stars', row['address'])
+        self.assertEqual('1999 Avenue Of The Stars', row['address'])
 
     def test_resolve_debug(self):
         q = self.factual.resolve('places-v3', {'name': 'factual inc', 'locality': 'los angeles'}, debug=True)
@@ -77,9 +80,9 @@ class FactualAPITestSuite(unittest.TestCase):
 
     def test_crosswalk(self):
         q = self.factual.crosswalk()
-        result = q.filters({'factual_id':'03c26917-5d66-4de9-96bc-b13066173c65','namespace':'simplegeo'}).data()
-        self.assertEqual(1, len(result))
-        self.assertEqual('SG_3ueEyOH4YN3ob9ryHjV1ey', result[0]['namespace_id'])
+        result = q.filters({'factual_id':FACTUAL_UUID,'namespace':'facebook'}).data()
+        self.assertGreaterEqual(len(result), 1)
+        self.assertEqual('151202829333', result[0]['namespace_id'])
 
     def test_schema(self):
         schema = self.places.schema()
@@ -131,7 +134,7 @@ class FactualAPITestSuite(unittest.TestCase):
         self.assertTrue(all(row['name'] == 'Starbucks' for row in data))
 
     def test_raw_write(self):
-        uuid = '1007462b-dd79-44f5-a69f-e0b6041fa8bd'
+        uuid = SANDBOX_UUID
         params = {'problem':'other','user':'python_driver_tester','debug':True}
         response = self.factual.raw_write('t/us-sandbox/' + uuid + '/flag', params)
         payload = json.loads(response)
@@ -173,9 +176,9 @@ class FactualAPITestSuite(unittest.TestCase):
         self.assertIn('income', income_demographics)
 
     def test_geocode(self):
-        geocode = self.factual.geocode(point(34.06021, -118.41828))
+        geocode = self.factual.geocode(point(34.058744, -118.416937))
         result = geocode.data()[0]
-        self.assertEqual('1801 Avenue Of The Stars', result['address'])
+        self.assertEqual('1999 Avenue Of The Stars', result['address'])
         self.assertLess(result['$distance'], 20)
 
     def test_submit_without_id(self):
@@ -190,7 +193,7 @@ class FactualAPITestSuite(unittest.TestCase):
 
     def test_submit_with_id(self):
         values = {'longitude': 100}
-        submit = self.factual.submit('us-sandbox', factual_id='1007462b-dd79-44f5-a69f-e0b6041fa8bd', values=values).user('python_driver_tester')
+        submit = self.factual.submit('us-sandbox', factual_id=SANDBOX_UUID, values=values).user('python_driver_tester')
         response = submit.write()
         if 'new_entity' in response:
             self.assertFalse(response['new_entity'])
@@ -199,13 +202,13 @@ class FactualAPITestSuite(unittest.TestCase):
             self.assertEqual('warning', response['status'])
 
     def test_clear(self):
-        clear = self.factual.clear('us-sandbox', '1007462b-dd79-44f5-a69f-e0b6041fa8bd', 'latitude,longitude').user('python_driver_tester')
+        clear = self.factual.clear('us-sandbox', SANDBOX_UUID, 'latitude,longitude').user('python_driver_tester')
         response = clear.write()
         self.assertIn('commit_id', response)
         self.assertGreater(len(response['commit_id']), 0)
 
     def test_flag(self):
-        flag = self.factual.flag('us-sandbox', '1007462b-dd79-44f5-a69f-e0b6041fa8bd').user('python_driver_tester').other().debug(True)
+        flag = self.factual.flag('us-sandbox', SANDBOX_UUID).user('python_driver_tester').other().debug(True)
         response = flag.write()
         self.assertEqual('ok', response['status'])
 
@@ -231,11 +234,11 @@ class FactualAPITestSuite(unittest.TestCase):
         self.assertTrue('query1' in response and 'query2' in response)
 
     def test_get_row(self):
-        row = self.factual.get_row('places', '03c26917-5d66-4de9-96bc-b13066173c65')
+        row = self.factual.get_row('places', FACTUAL_UUID)
         self.assertEqual('Factual', row['name'])
 
     def test_boost(self):
-        boost = self.factual.boost('us-sandbox', '1007462b-dd79-44f5-a69f-e0b6041fa8bd').user('python_driver_tester')
+        boost = self.factual.boost('us-sandbox', SANDBOX_UUID).user('python_driver_tester')
         response = boost.write()
         self.assertEqual('ok', response['status'])
 
