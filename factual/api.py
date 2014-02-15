@@ -9,6 +9,7 @@ import requests
 from requests_oauthlib import OAuth1
 
 from .query import Resolve, Table, Submit, Insert, Facets, Flag, Geopulse, Geocode, Diffs, Match, Multi, Clear, Boost
+from .utils import is_str
 
 API_V3_HOST = "http://api.v3.factual.com"
 DRIVER_VERSION_TAG = "factual-python-driver-1.5.0"
@@ -151,11 +152,11 @@ class API(object):
         return self.client.post(url, headers=headers, data=params)
 
     def _transform_params(self, params):
-        if isinstance(params, str):
+        if is_str(params):
             return params
         string_params = []
         for key, val in params.items():
-            transformed = json.dumps(val) if not isinstance(val, str) else val
+            transformed = json.dumps(val) if not is_str(val) else val
             string_params.append((key, transformed))
         return dict(string_params)
 

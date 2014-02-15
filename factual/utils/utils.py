@@ -14,3 +14,11 @@ def point(lat, lon):
     Creates an API-ready point from the given latitude and longitue.
     """
     return {'$point': [lat, lon]}
+
+try:
+    isinstance('', basestring)
+    def is_str(obj):
+        return isinstance(obj, basestring)
+except NameError:
+    def is_str(obj):
+        return isinstance(obj, str)
