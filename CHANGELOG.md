@@ -1,3 +1,7 @@
+## 1.5.1
+
+ * fixed #18
+
 ## 1.5.0
 
  * removed support for Monetize

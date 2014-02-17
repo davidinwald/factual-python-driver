@@ -12,7 +12,7 @@ from .query import Resolve, Table, Submit, Insert, Facets, Flag, Geopulse, Geoco
 from .utils import is_str
 
 API_V3_HOST = "http://api.v3.factual.com"
-DRIVER_VERSION_TAG = "factual-python-driver-1.5.0"
+DRIVER_VERSION_TAG = "factual-python-driver-1.5.1"
 
 class Factual(object):
     def __init__(self, key, secret, timeout=None):
