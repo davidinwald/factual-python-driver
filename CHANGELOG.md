@@ -1,3 +1,7 @@
+## unreleased
+
+ * removed support for geopulse context
+
 ## 1.5.1
 
  * fixed #18

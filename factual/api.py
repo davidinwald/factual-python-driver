@@ -8,7 +8,7 @@ from functools import partial
 import requests
 from requests_oauthlib import OAuth1
 
-from .query import Resolve, Table, Submit, Insert, Facets, Flag, Geopulse, Geocode, Diffs, Match, Multi, Clear, Boost
+from .query import Resolve, Table, Submit, Insert, Facets, Flag, Geocode, Diffs, Match, Multi, Clear, Boost
 from .utils import is_str
 
 API_V3_HOST = "http://api.v3.factual.com"
@@ -59,9 +59,6 @@ class Factual(object):
 
     def boost(self, table, factual_id, q=None):
         return Boost(self.api, table, factual_id, {'factual_id': factual_id, 'q': q})
-
-    def geopulse(self, point={}):
-        return Geopulse(self.api, 'geopulse/context', {'geo': point})
 
     def geocode(self, point):
         return Geocode(self.api, 'places/geocode', {'geo': point})
