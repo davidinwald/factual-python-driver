@@ -19,6 +19,9 @@ class Flag(Write):
     def nonexistent(self):
         return self.problem('nonexistent')
 
+    def relocated(self, preferred=None):
+        return self.problem('relocated', preferred)
+
     def inappropriate(self):
         return self.problem('inappropriate')
 
