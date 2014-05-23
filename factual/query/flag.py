@@ -4,11 +4,14 @@ class Flag(Write):
     def __init__(self, api, table, factual_id, params={}):
         Write.__init__(self, api, table, factual_id, params)
 
-    def problem(self, problem):
-        return self._copy({'problem': problem})
+    def problem(self, problem, preferred=None):
+        params = {'problem': problem}
+        if preferred:
+            params['preferred'] = preferred
+        return self._copy(params)
 
-    def duplicate(self):
-        return self.problem('duplicate')
+    def duplicate(self, preferred=None):
+        return self.problem('duplicate', preferred)
 
     def inaccurate(self):
         return self.problem('inaccurate')

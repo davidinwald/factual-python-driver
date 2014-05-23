@@ -196,6 +196,11 @@ class FactualAPITestSuite(unittest.TestCase):
         response = flag.write()
         self.assertEqual('ok', response['status'])
 
+    def test_flag_preferred(self):
+        flag = self.factual.flag('us-sandbox', SANDBOX_UUID).duplicate(FACTUAL_UUID).user('python_driver_tester').debug(True)
+        response = flag.write()
+        self.assertEqual('ok', response['status'])
+
     def test_diffs(self):
         diffs = self.factual.diffs('places-us', 1400788800000, 1400792400000).data()
         self.assertGreater(len(diffs), 0)
