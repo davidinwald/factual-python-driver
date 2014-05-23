@@ -3,6 +3,7 @@
  * removed support for geopulse context
  * added "preferred" parameter for flag type duplicate
  * added "relocated" option to flag
+ * upgraded to requests 2.3
 
 ## 1.5.1
 
