@@ -1,4 +1,4 @@
-## unreleased
+## 1.6.0
 
  * removed support for geopulse context
  * added "preferred" parameter for flag type duplicate
