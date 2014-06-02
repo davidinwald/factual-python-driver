@@ -51,6 +51,9 @@ class Table(Read):
     def sort_desc(self, *args):
         return self.sort(','.join(field + ':desc' for field in args))
 
+    def threshold(self, threshold):
+        return self._copy({'threshold': threshold})
+
     def schema(self):
         if not self.cached_schema:
             self.cached_schema = self.api.schema(self)
