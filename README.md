@@ -1,399 +1,266 @@
 # About
 
-This is the Factual supported Python driver for [Factual's public API](http://developer.factual.com/display/docs/Factual+Developer+APIs+Version+3).
+This is the Factual-supported Python driver for [Factual's public API](http://developer.factual.com).
 
+# Install
 
-This API supports queries to Factual's Read, Schema, Crosswalk, and Resolve APIs. Full documentation is available on the Factual website:
-
-*   [Read](http://developer.factual.com/display/docs/Factual+Developer+APIs+Version+3): Search the data
-*   [Schema](http://developer.factual.com/display/docs/Core+API+-+Schema): Get table metadata
-*   [Crosswalk](http://developer.factual.com/display/docs/Places+API+-+Crosswalk): Get third-party IDs
-*   [Resolve](http://developer.factual.com/display/docs/Places+API+-+Resolve): Enrich your data with Factual places
-*   [Match](http://developer.factual.com/display/docs/Places+API+-+Match): Map your data to Factual places
-*   [Facets](http://developer.factual.com/display/docs/Core+API+-+Facets): Get counts of data by facet
-*   [Geopulse](http://developer.factual.com/display/docs/Places+API+-+Geopulse): Geographic context
-*   [Geocode](http://developer.factual.com/display/docs/Places+API+-+Reverse+Geocoder): Translate coordinates into addresses
-*   [World Geographies](http://developer.factual.com/display/docs/World+Geographies): Administrative and natural geographies
-*   [Submit](https://github.com/Factual/factual-python-driver/wiki/Submit): Submit edits to Factual's data
-*   [Flag](https://github.com/Factual/factual-python-driver/wiki/Flag): Flag rows as problematic
-*   [Diffs](https://github.com/Factual/factual-python-driver/wiki/Diffs): Get the latest data updates
-
-Full documentation is available at http://developer.factual.com
-
-If you need additional support, please visit http://support.factual.com
-
-# Overview
-
-
-## Setup
-The easiest way to get started with the driver is to install it from the Python Package Index.
-
-```shell
+```bash
 pip install factual-api
 ```
 
-Obtain an OAuth key and secret from [Factual](http://www.factual.com/devtools/beta).
+# Get Started
 
-To use the driver in a python program, just create a Factual object using your OAuth key and secret.
-
+Include this driver in your project:
 ```python
 from factual import Factual
-factual = Factual(KEY, SECRET)
+factual = Factual('YOUR_KEY', 'YOUR_SECRET')
+```
+If you don't have a Factual API key yet, [it's free and easy to get one](https://www.factual.com/api-keys/request).
+
+## Schema
+Use the schema API call to determine which fields are available, the datatypes of those fields, and which operations (sorting, searching, writing, facetting) can be performed on each field.
+
+Full documentation: http://developer.factual.com/api-docs/#Schema
+```python
+s = factual.table('places').schema()
+print(s)
 ```
 
-example.py is provided with the driver as a reference.
+## Read
+Use the read API call to query data in Factual tables with any combination of full-text search, parametric filtering, and geo-location filtering.
 
-## Dependencies
-[requests](http://github.com/kennethreitz/requests)
+Full documentation: http://developer.factual.com/api-docs/#Read
 
-[requests_oauthlib](https://github.com/requests/requests-oauthlib)
-
-
-## Basic Design
-
-The driver allows you to create an authenticated handle to Factual. With a Factual handle, you can send queries and get results back.
-
-Queries are created using the Factual handle, which provides a fluent interface to constructing your queries.  One thing to be aware of is the behavior of the query modifier functions.  These return new query instances, so base queries can be set up and then modified in different ways to produce new queries.
+Related place-specific documentation:
+* Categories: http://developer.factual.com/working-with-categories/
+* Placerank, Sorting: http://developer.factual.com/search-placerank-and-boost/
 
 ```python
-# Create a base search query
-q = factual.table("places").search("sushi")
+places = factual.table('places')
 
-# Use this query with a filter
-filter_query = q.filters({"website":{"$blank":False}})
+# Full-text search:
+places_with_count = places.search('century city mall').include_count(True)
+data = places_with_count.data()
+print('showing {}/{} rows: {}'.format(places_with_count.included_rows(), places_with_count.total_row_count(), data))
 
-# Use the same base query with select parameters (will not have website filter applied)
-select_name = q.select("name")
-```
+# Row filters:
+#  search restaurants (http://developer.factual.com/working-with-categories/)
+#  note that this will return all sub-categories of 347 as well.
+data = places.filters({'category_ids':{'$includes':347}}).data()
+print(data)
 
-## Tables
+#  search restaurants or bars
+data = places.filters({'category_ids':{'$includes_any':[312,347]}}).data()
+print(data)
 
-The Factual API is a generic API that sits over all tables available via the Factual v3 API, such as `places` and `restaurants`.
+#  search entertainment venues but NOT adult entertainment
+data = places.filters({'$and':[{'category_ids':{'$includes':317}},{'category_ids':{'$excludes':318}}]}).data()
+print(data)
 
-## Unit Tests
-Unit Tests are provided to ensure the driver and OAuth are functioning as expected.  
-Add your Oauth credentials to tests/test_settings.py
-From the command line, run: python -m tests.api_test
+#  search for Starbucks in Los Angeles
+data = places.search('starbucks').filters({'locality':'los angeles'}).data()
+print(data)
 
-## URL Encoding
-The Python driver handles URL encoding, therefore all parameters passed to the driver should be in their un-encoded form. 
+#  search for starbucks in Los Angeles or Santa Monica 
+data = places.search('starbucks').filters({'$or':[{'locality':{'$eq':'los angeles'}},{'locality':{'$eq':'santa monica'}}]}).data()
+print(data)
 
-## Simple Read Examples
+# Paging:
+#  search for starbucks in Los Angeles or Santa Monica (second page of results):
+data = places.search('starbucks').filters({'$or':[{'locality':{'$eq':'los angeles'}},{'locality':{'$eq':'santa monica'}}]}).offset(20).limit(20).data()
+print(data)
 
-```python
-# Return entities from the Places dataset where name equals "starbucks"
-factual.table("places").filters({"name":"starbucks"}).data()
-```
-
-```python
-# Full text search for "sushi santa monica"
-factual.table("places").search("sushi santa monica").data()
-```
-
-```python
-# Filter based on category"
-factual.table("places").filters({"category_ids":{"$includes":358}}).data()
-```
-
-```python
-# Return entity names and non-blank websites from the Global dataset, for entities located in Thailand
-factual.table("global").select("name,website").filters(
-	{"country":"TH","website":{"$blank":False}}).data()
-```
-
-```python
-# Return highly rated restaurants in Los Angeles with WiFi
-factual.table("restaurants").filters(
-  {"$and":[{"locality":"los angeles"},{"rating":{"$gte":4}},{"wifi":"true"}]}).data()
-```
-
-## Simple Crosswalk Example
-Crosswalk is just a table like places or restaurants, so all of the normal table read features can be used with it.
-
-```python
-# Get Crosswalk data using a Factual ID
-FACTUAL_ID = "110ace9f-80a7-47d3-9170-e9317624ebd9"
-query = factual.crosswalk().filters({'factual_id':FACTUAL_ID})
-query.data()
-```
-
-```python
-# Get Crosswalk data using a third party namespace and namespace_id
-SIMPLEGEO_ID = "SG_6XIEi3qehN44LH8m8i86v0"
-query = factual.crosswalk()
-namespace_query = query.filters({'namespace':'simplegeo','namespace_id':SIMPLEGEO_ID})
-factual_id = namespace_query.data()[0]['factual_id']
-query.filters({'factual_id':factual_id}).data()
-```
-
-## Simple Facets Example
-
-```python
-# Count the number of Starbucks per country
-query = factual.facets("global").search("starbucks").select("country")
-query.data()
-```
-
-
-
-## More Read Examples
-
-```python
-# 1. Specify the table Global
-query = factual.table("global")
-```
-
-```python
-# 2. Filter results in country US
-query = query.filters({"country":"US"})
-```
-
-```python
-# 3. Search for "sushi" or "sashimi"
-query = query.search("sushi, sashimi")
-```
-
-```python
-# 4. Filter by geolocation
-query = query.geo({"$circle":{"$center":[34.06021, -118.41828], "$meters":5000}})
-# Or
+# Geo filter:
+#  coffee near the Factual office
 from factual.utils import circle
-query = query.geo(circle(34.06021, -118.41828, 5000))
+data = places.search('coffee').geo(circle(34.058583, -118.416582, 1000)).data()
+print(data)
+
+# Existence threshold:
+#  prefer precision over recall:
+data = places.threshold('confident').data()
+print(data)
+
+# Get a row by factual id:
+data = factual.get_row('places', '03c26917-5d66-4de9-96bc-b13066173c65')
+print(data)
+```
+
+## Facets
+Use the facets call to get summarized counts, grouped by specified fields.
+
+Full documentation: http://developer.factual.com/api-docs/#Facets
+```python
+# show top 5 cities that have more than 20 Starbucks in California
+data = factual.facets('places').search('starbucks').filters({'region':'CA'}).select('locality').min_count(20).limit(5).data()
+print(data)
+```
+
+## Resolve
+Use resolve to generate a confidence-based match to an existing set of place attributes.
+
+Full documentation: http://developer.factual.com/api-docs/#Resolve
+```python
+# resovle from name and address info
+data = factual.resolve('places', {'name':'McDonalds','address':'10451 Santa Monica Blvd','region':'CA','postcode':'90025'}).data()
+print(data)
+
+# resolve from name and geo location
+data = factual.resolve('places', {'name':'McDonalds','latitude':34.05671,'longitude':-118.42586}).data()
+print(data)
+```
+
+## Match
+Match is similar to resolve, but returns only the Factual ID and is intended for high volume mapping.
+
+Full documentation: http://developer.factual.com/api-docs/#Match
+```python
+data = factual.match('places', {'name':'McDonalds','address':'10451 Santa Monica Blvd','region':'CA','postcode':'90025','country':'US'}).data()
+print(data)
+```
+
+## Crosswalk
+Crosswalk contains third party mappings between entities.
+
+Full documentation: http://developer.factual.com/places-crosswalk/
+
+```python
+# Query with factual id, and only show entites from Yelp:
+data = factual.crosswalk().filters({'factual_id':'3b9e2b46-4961-4a31-b90a-b5e0aed2a45e','namespace':'yelp'}).data()
+print(data)
 ```
 
 ```python
-# 5. Sorting
-query = query.sort("name:asc")       # ascending 
-query = query.sort("name:desc")      # descending
+# query with an entity from Foursquare:
+data = factual.crosswalk().filters({'namespace':'foursquare','namespace_id':'4ae4df6df964a520019f21e3'}).data()
+print(data)
+```
+
+## World Geographies
+World Geographies contains administrative geographies (states, counties, countries), natural geographies (rivers, oceans, continents), and assorted geographic miscallaney.  This resource is intended to complement the Global Places and add utility to any geo-related content.
+
+```python
+# find California, USA
+data = factual.table('world-geographies').filters({'$and':[{'name':{'$eq':'California'}},{'country':{'$eq':'US'}},{'placetype':{'$eq':'region'}}]}).select('contextname,factual_id').data()
+print(data)
+# returns 08649c86-8f76-11e1-848f-cfd5bf3ef515 as the Factual Id of "California, US"
 ```
 
 ```python
-# 6. Paging
-query = query.offset("20")
+# find cities and town in California (first 20 rows)
+data = factual.table('world-geographies').filters({'$and':[{'ancestors':{'$includes':'08649c86-8f76-11e1-848f-cfd5bf3ef515'}},{'country':{'$eq':'US'}},{'placetype':{'$eq':'locality'}}]}).select('contextname,factual_id').data()
+print(data)
 ```
 
+## Submit
+Submit new data, or update existing data. Submit behaves as an "upsert", meaning that Factual will attempt to match the provided data against any existing places first. Note: you should ALWAYS store the *commit ID* returned from the response for any future support requests.
 
-# Read API
+Full documentation: http://developer.factual.com/api-docs/#Submit
 
-## All Top Level Query Parameters
-
-<table>
-  <col width="33%"/>
-  <col width="33%"/>
-  <col width="33%"/>
-  <tr>
-    <th>Parameter</th>
-    <th>Description</th>
-    <th>Example</th>
-  </tr>
-  <tr>
-    <td>filters</td>
-    <td>Restrict the data returned to conform to specific conditions.</td>
-    <td><tt>query = query.filters({"name":{"$bw":"starbucks"}})</tt></td>
-  </tr>
-  <tr>
-    <td>include_count</td>
-    <td>returns the total count of the number of rows in the dataset that conform to the query.</td>
-    <td><tt>query = query.include_count(True)</tt><br><tt>count = query.total_row_count()</tt></td>
-  </tr>
-  <tr>
-    <td>geo</td>
-    <td>Restrict data to be returned to be within a geographical range based.</td>
-    <td><tt>query.geo({"$circle":{"$center":[34.06021, -118.41828], "$meters":5000}})</tt></td>
-  </tr>
-  <tr>
-    <td>limit</td>
-    <td>Limit the results</td>
-    <td><tt>query = query.limit(12)</tt></td>
-  </tr>
-  <tr>
-    <td>page</td>
-    <td>Limit the results to a specific "page".</td>
-    <td><tt>query = query.page(2, :per:10)</tt></td>
-  </tr>
-  <tr>
-    <td>search (across entity)</td>
-    <td>Full text search across entity</td>
-    <td>
-      Find "sushi":<br><tt>query = query.search("sushi")</tt><p>
-      Find "sushi" or "sashimi":<br><tt>query = query.search("sushi, sashimi")</tt><p>
-      Find "sushi" and "santa" and "monica":<br><tt>query.search("sushi santa monica")</tt>
-    </td>
-  </tr>
-  <tr>
-    <td>search (across field)</td>
-    <td>Full text search on specific field</td>
-    <td><tt>query = query.filters({"name":{"$search":"cafe"}})</tt></td>
-  </tr>
-  <tr>
-    <td>select</td>
-    <td>Specifiy which fields to include in the query results.  Note that the order of fields will not necessarily be preserved in the resulting response due to the nature Hashes.</td>
-    <td><tt>query = query.select("name,address,locality,region")</tt></td>
-  </tr>
-  <tr>
-    <td>sort</td>
-    <td>The field (or fields) to sort data on, as well as the direction of sort.<p>
-        Sorts ascending by default, but supports both explicitly sorting ascending and descending, by using <tt>sort_asc</tt> or <tt>sort_desc</tt>.
-        Supports $distance as a sort option if a geo-filter is specified.<p>
-        Supports $relevance as a sort option if a full text search is specified either using the q parameter or using the $search operator in the filter parameter.<p>
-        By default, any query with a full text search will be sorted by relevance.<p>
-        Any query with a geo filter will be sorted by distance from the reference point.  If both a geo filter and full text search are present, the default will be relevance followed by distance.</td>
-    <td><tt>query = query.sort("name:asc")</tt><br>
-    <tt>query = query.sort("$distance:asc")</tt><br>
-    <tt>query = query.sort("$distance:asc,name:desc")</tt></td>
-  </tr>
-  <tr>
-    <td>user</td>
-    <td>Accepts arbitrary tokens for discriminating requests across clients.</td>
-    <td><tt>query = query.user("my username")</tt></td>
-  </tr>
-</table>
-
-## Row Filters
-
-The driver supports various row filter logic. For example:
+Place-specific Write API documentation: http://developer.factual.com/write-api/
 
 ```python
-# Returns records from the Places dataset with names beginning with "starbucks"
-factual.table("places").filters({"name":{"$bw":"starbucks"}}).data()
+values = {
+    'name': 'Factual',
+    'address': '1999 Avenue of the Stars',
+    'address_extended': '34th floor',
+    'locality': 'Los Angeles',
+    'region': 'CA',
+    'postcode': '90067',
+    'country': 'us',
+    'latitude': 34.058743,
+    'longitude': -118.41694,
+    'category_ids': [209,213],
+    'hours': 'Mon 11:30am-2pm Tue-Fri 11:30am-2pm, 5:30pm-9pm Sat-Sun closed',
+}
+resp = factual.submit('us-sandbox', values=values).user('a_user_id').write()
+print(resp)
 ```
 
-### Supported row filter logic
+Edit an existing row:
+```python
+resp = factual.submit('us-sandbox', '4e4a14fe-988c-4f03-a8e7-0efc806d0a7f', {'address_extended':'35th floor'}).user('a_user_id').write()
+print(resp)
+```
 
-<table>
-  <tr>
-    <th>Predicate</th>
-    <th width="25%">Description</th>
-    <th>Example</th>
-  </tr>
-  <tr>
-    <td>$eq</td>
-    <td>equal to</td>
-    <td><tt>query = query.filters({"region":{"$eq":"CA"}})</tt></td>
-  </tr>
-  <tr>
-    <td>$neq</td>
-    <td>not equal to</td>
-    <td><tt>query = query.filters({"region":{"$neq":"CA"}})</tt></td>
-  </tr>
-  <tr>
-    <td>search</td>
-    <td>full text search</td>
-    <td><tt>query = query.search("sushi")</tt></td>
-  </tr>
-  <tr>
-    <td>$in</td>
-    <td>equals any of</td>
-    <td><tt>query = query.filters({"region":{"$in":["CA", "NM", "NY"]}})</tt></td>
-  </tr>
-  <tr>
-    <td>$nin</td>
-    <td>does not equal any of</td>
-    <td><tt>query = query.filters({"region":{"$nin":["CA", "NM", "NY"]}})</tt></td>
-  </tr>
-  <tr>
-    <td>$bw</td>
-    <td>begins with</td>
-    <td><tt>query = query.filters({"name":{"$bw":"starbucks"}})</tt></td>
-  </tr>
-  <tr>
-    <td>$nbw</td>
-    <td>does not begin with</td>
-    <td><tt>query = query.filters({"name":{"$nbw":"starbucks"}})</tt></td>
-  </tr>
-  <tr>
-    <td>$bwin</td>
-    <td>begins with any of</td>
-    <td><tt>query = query.filters({"name":{"$bwin":["starbucks", "coffee", "tea"]}})</tt></td>
-  </tr>
-  <tr>
-    <td>$nbwin</td>
-    <td>does not begin with any of</td>
-    <td><tt>query = query.filters({"name":{"$nbwin":["starbucks", "coffee", "tea"]}})</tt></td>
-  </tr>
-  <tr>
-    <td>$includes</td>
-    <td>array includes</td>
-    <td><tt>query = query.filters({"category_ids":{"$includes":10}})</tt></td>
-  </tr>
-  <tr>
-    <td>$includes_any</td>
-    <td>array includes any of</td>
-    <td><tt>query = query.filters({"category_ids":{"$includes_any":[10,100]}})</tt></td>
-  </tr>
-  <tr>
-    <td>$blank</td>
-    <td>test to see if a value is (or is not) blank or null</td>
-    <td><tt>query = query.filters({"tel":{"$blank":true}})</tt><br>
-        <tt>query = query.filters({"website":{"$blank":False}})</tt></td>
-  </tr>
-  <tr>
-    <td>$gt</td>
-    <td>greater than</td>
-    <td><tt>query = query.filters({"rating":{"$gt":7.5}})</tt></td>
-  </tr>
-  <tr>
-    <td>$gte</td>
-    <td>greater than or equal</td>
-    <td><tt>query = query.filters({"rating":{"$gte":7.5}})</tt></td>
-  </tr>
-  <tr>
-    <td>$lt</td>
-    <td>less than</td>
-    <td><tt>query = query.filters({"rating":{"$lt":7.5}})</tt></td>
-  </tr>
-  <tr>
-    <td>$lte</td>
-    <td>less than or equal</td>
-    <td><tt>query = query.filters({"rating":{"$lte":7.5}})</tt></td>
-  </tr>
-</table>
 
-### AND
+## Flag
+Use the flag API to flag problems in existing data.
 
-Filters can be logically AND'd together. For example:
+Full documentation: http://developer.factual.com/api-docs/#Flag
+
+Flag a place that is a duplicate of another. The *preferred* entity that should persist is passed as a GET parameter.
+```python
+resp = factual.flag('us-sandbox', '4e4a14fe-988c-4f03-a8e7-0efc806d0a7f').duplicate(preferred='9d676355-6c74-4cf6-8c4a-03fdaaa2d66a').user('a_user_id').write()
+print(resp)
+```
+
+Flag a place that is closed.
+```python
+resp = factual.flag('us-sandbox', '4e4a14fe-988c-4f03-a8e7-0efc806d0a7f').problem('closed').comment('was shut down when I went there yesterday.').user('a_user_id').write()
+print(resp)
+```
+
+Flag a place that has been relocated, so that it will redirect to the new location. The *preferred* entity (the current location) is passed as a GET parameter. The old location is identified in the URL.
+```python
+resp = factual.flag('us-sandbox', '4e4a14fe-988c-4f03-a8e7-0efc806d0a7f').relocated(preferred='9d676355-6c74-4cf6-8c4a-03fdaaa2d66a').user('a_user_id').write()
+print(resp)
+```
+
+## Clear
+The clear API is used to signal that an existing attribute's value should be reset.
+
+Full documentation: http://developer.factual.com/api-docs/#Clear
+```python
+resp = factual.clear('us-sandbox', '4e4a14fe-988c-4f03-a8e7-0efc806d0a7f', fields='latitude,longitude').user('a_user_id').write()
+print(resp)
+```
+
+## Boost
+The boost API is used to signal rows that should appear higher in search results.
+
+Full documentation: http://developer.factual.com/api-docs/#Boost
+```python
+resp = factual.boost('us-sandbox', '4e4a14fe-988c-4f03-a8e7-0efc806d0a7f', q='local business data').user('a_user_id').write()
+print(resp)
+```
+
+## Multi
+Make up to three simultaneous requests over a single HTTP connection. Note: while the requests are performed in parallel, the final response is not returned until all contained requests are complete. As such, you shouldn't use multi if you want non-blocking behavior. Also note that a contained response may include an API error message, if appropriate.
+
+Full documentation: http://developer.factual.com/api-docs/#Multi
 
 ```python
-# name begins with "coffee" AND tel is not blank
-query = query.filters({"$and":[{"name":{"$bw":"coffee"}}, {"tel":{"$blank":False}}] })
+# Query read and facets in one request:
+import json
+read_query = factual.table('places').search('starbucks').geo(circle(34.041195,-118.331518,1000))
+facets_query = factual.facets('places').search('starbucks').filters({'region':'CA'}).select('locality').min_count(20).limit(5)
+raw_resp = factual.multi({'read':read_query,'facets':facets_query})
+query_results = json.loads(raw_resp)
+print(query_results['read'])
+print(query_results['facets'])
 ```
 
-### OR
 
-Filters can be logically OR'd. For example:
+## Error Handling
+The driver may throw a `factual.api.APIException` exception for invalid requests or a more generic exception for network errors or other problems.
 
+## Debug Mode
+To see debug information about the requests being sent to Factual, you can get the url created by a query:
 ```python
-# name begins with "coffee" OR tel is not blank
-query = query.filters({"$or":[{"name":{"$bw":"coffee"}}, {"tel":{"$blank":False}}] })
+q = factual.table('places').search('starbucks').filters({'region':'CA'}).limit(10)
+print(q.get_url())
 ```
 
-### Combined ANDs and ORs
 
-You can nest AND and OR logic to whatever level of complexity you need. For example:
-
+## Custom timeouts
+You can set the request timeout (in seconds):
 ```python
-# (name begins with "Starbucks") OR (name begins with "Coffee")
-# OR
-# (name full text search matches on "tea" AND tel is not blank)
-query = query.filters({"$or":[ {"$or":[ {"name":{"$bw":"starbucks"}},
-                                               {"name":{"$bw":"coffee"}}]},
-                                   {"$and":[ {"name":{"$search":"tea"}},
-                                                {"tel":{"$blank":False}} ]} ]})
+# set the timeout as 1 second
+factual = Factual('YOUR_KEY', 'YOUR_SECRET', timeout=1.0)
 ```
+`Timeout` exceptions are raised when the server does not issue a response within the specified time.
 
-## Raw Read
-The raw read feature allows you to perform arbitrary read queries against the Factual API.  This includes API features which may not have explicit driver support yet.  Raw read can be used with either a URL-encoded query string or parameter dict.  For example:
-
-```python
-# url-encoded query string
-response = factual.raw_read('t/places/read', 'limit=15&filters=%7B%22name%22%3A%22Starbucks%22%7D')
-# parameters in a dict
-response = factual.raw_read('t/places/read', {'limit':15,'filters':{"name":"Starbucks"}})
-```
-
-# Full Documentation
-
-Full documentation is available at http://developer.factual.com
 
 # Where to Get Help
 
@@ -404,4 +271,4 @@ If you think you've identified a specific bug in this driver, please file an iss
   * What actually happened
   * Detailed stack trace and/or line numbers
 
-If you are having any other kind of issue, such as unexpected data or strange behaviour from Factual's API (or you're just not sure WHAT'S going on), please contact us through [GetSatisfaction](http://support.factual.com/factual).
+If you are having any other kind of issue, such as unexpected data or strange behaviour from Factual's API (or you're just not sure WHAT'S going on), please contact us through the [Factual support site](http://support.factual.com/factual).
