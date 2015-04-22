@@ -1,3 +1,7 @@
+## 1.6.1
+
+ * upgraded to requests 2.6
+
 ## 1.6.0
 
  * removed support for geopulse context
