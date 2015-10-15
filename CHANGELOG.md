@@ -1,3 +1,7 @@
+## unreleased
+
+ * changed requests and requests-oauthlib dependencies to require minimum version
+
 ## 1.6.1
 
  * upgraded to requests 2.6
