@@ -159,12 +159,6 @@ class FactualAPITestSuite(unittest.TestCase):
         self.assertTrue(locality['los angeles'] > 3000)
         self.assertTrue(locality['beverly hills'] > 500)
 
-    def test_geocode(self):
-        geocode = self.factual.geocode(point(34.058744, -118.416937))
-        result = geocode.data()[0]
-        self.assertEqual('1999 Avenue Of The Stars', result['address'])
-        self.assertLess(result['$distance'], 20)
-
     def test_submit_without_id(self):
         values = {'longitude': 100}
         submit = self.factual.submit('us-sandbox', values=values).user('python_driver_tester')
